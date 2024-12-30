@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy New Year 2025</title>
+    <!-- Tailwind & DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black animate-gradient transition-all duration-500">
+    <!-- Theme Toggle -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="theme-toggle" class="btn btn-circle btn-ghost">
+            <i class="fas fa-moon text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Messages Button -->
+    <div class="fixed top-4 left-4 z-50">
+        <button class="btn btn-primary btn-sm md:btn-md" onclick="document.getElementById('messages-modal').showModal()">
+            <i class="fas fa-comments mr-2"></i> 
+            <span class="hidden sm:inline">View Messages</span>
+        </button>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero min-h-screen backdrop-blur-sm px-4">
+        <div class="hero-content text-center">
+            <div class="max-w-lg w-full">
+                <div class="mb-8 space-y-4">
+                    <h1 class="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-secondary inline-block text-transparent bg-clip-text" id="title">
+                        Happy New Year 2025!
+                    </h1>
+                    <p class="text-base md:text-lg opacity-80">Countdown to the New Year</p>
+                </div>
+
+                <!-- Countdown Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-12">
+                    <div class="bg-base-200 p-3 md:p-4 rounded-lg shadow-xl backdrop-blur-md">
+                        <span id="days" class="countdown font-mono text-2xl md:text-4xl">00</span>
+                        <div class="text-xs mt-1 md:mt-2">DAYS</div>
+                    </div>
+                    <div class="bg-base-200 p-3 md:p-4 rounded-lg shadow-xl backdrop-blur-md">
+                        <span id="hours" class="countdown font-mono text-2xl md:text-4xl">00</span>
+                        <div class="text-xs mt-1 md:mt-2">HOURS</div>
+                    </div>
+                    <div class="bg-base-200 p-3 md:p-4 rounded-lg shadow-xl backdrop-blur-md">
+                        <span id="minutes" class="countdown font-mono text-2xl md:text-4xl">00</span>
+                        <div class="text-xs mt-1 md:mt-2">MINUTES</div>
+                    </div>
+                    <div class="bg-base-200 p-3 md:p-4 rounded-lg shadow-xl backdrop-blur-md">
+                        <span id="seconds" class="countdown font-mono text-2xl md:text-4xl">00</span>
+                        <div class="text-xs mt-1 md:mt-2">SECONDS</div>
+                    </div>
+                </div>
+                
+                <!-- Greeting Form -->
+                <div class="card bg-base-100 shadow-xl mx-auto backdrop-blur-md border border-base-300">
+                    <div class="card-body p-4 md:p-6">
+                        <h2 class="card-title justify-center text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-secondary inline-block text-transparent bg-clip-text">
+                            Send New Year Wishes!
+                        </h2>
+                        <form id="greetingForm" class="space-y-4">
+                            <div class="form-control">
+                                <input type="text" placeholder="Your Name" id="name" 
+                                    class="input input-bordered w-full bg-base-200" required>
+                            </div>
+                            <div class="form-control">
+                                <textarea class="textarea textarea-bordered w-full bg-base-200 min-h-[100px]" 
+                                    id="message" placeholder="Your New Year Message" required></textarea>
+                            </div>
+                            <button class="btn btn-primary w-full">
+                                <i class="fas fa-paper-plane mr-2"></i> Send Wishes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages Modal -->
+    <dialog id="messages-modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box w-11/12 max-w-5xl h-[80vh]">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-xl md:text-2xl mb-4 bg-gradient-to-r from-primary to-secondary inline-block text-transparent bg-clip-text">
+                New Year Messages
+            </h3>
+            
+            <!-- Search and Filter -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                <div class="form-control flex-1">
+                    <div class="input-group">
+                        <input type="text" id="search-messages" placeholder="Search messages..." 
+                            class="input input-bordered w-full" />
+                        <button class="btn btn-square">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <select class="select select-bordered w-full sm:w-auto" id="message-filter">
+                    <option value="all">All Messages</option>
+                    <option value="recent">Most Recent</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="overflow-y-auto max-h-[50vh] md:max-h-[60vh] pr-2 md:pr-4 space-y-3 md:space-y-4 
+                       scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-base-100" id="modal-messages">
+                <!-- Messages will be displayed here -->
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <script>
+        // Ganti semua URL dari localhost:8080 menjadi URL backend yang akan di-deploy
+        const BACKEND_URL = 'https://your-backend-url.com'; // Ini akan kita update nanti
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const themeIcon = themeToggle.querySelector('i');
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Animate theme change
+            gsap.to('body', {
+                backgroundColor: newTheme === 'dark' ? '#111' : '#fff',
+                duration: 0.5
+            });
+
+            // Update theme
+            html.setAttribute('data-theme', newTheme);
+            
+            // Update icon
+            themeIcon.className = newTheme === 'dark' ? 'fas fa-moon text-xl' : 'fas fa-sun text-xl';
+
+            // Animate icon
+            anime({
+                targets: themeIcon,
+                rotate: '1turn',
+                duration: 1000,
+                easing: 'easeInOutSine'
+            });
+        });
+
+        // Fungsi untuk memuat pesan dari server
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/messages`);
+                const messages = await response.json();
+                messages.forEach(messageData => {
+                    createFloatingMessage(
+                        messageData.name, 
+                        messageData.message, 
+                        new Date(messageData.timestamp).toLocaleString()
+                    );
+                });
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        // Create floating message function
+        function createFloatingMessage(name, message, timestamp) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'card bg-base-200 shadow-xl absolute z-10';
+            messageElement.style.left = Math.random() * window.innerWidth + 'px';
+            messageElement.style.top = Math.random() * window.innerHeight + 'px';
+            messageElement.innerHTML = `
+                <div class="card-body p-4">
+                    <h3 class="card-title text-sm"><i class="fas fa-user"></i> ${name}</h3>
+                    <p class="text-sm">${message}</p>
+                    <div class="card-actions justify-end">
+                        <span class="text-xs opacity-50">${timestamp}</span>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(messageElement);
+            
+            anime({
+                targets: messageElement,
+                translateX: function() { 
+                    return anime.random(-500, 500); 
+                },
+                translateY: function() { 
+                    return anime.random(-500, 500); 
+                },
+                scale: function() { 
+                    return anime.random(0.5, 1.5); 
+                },
+                rotate: function() { 
+                    return anime.random(-360, 360); 
+                },
+                opacity: {
+                    value: [0, 1],
+                    duration: 1000
+                },
+                duration: 8000,
+                loop: true,
+                direction: 'alternate',
+                easing: 'easeInOutSine',
+                delay: function() { 
+                    return anime.random(0, 2000); 
+                }
+            });
+        }
+
+        // Countdown Timer
+        function updateCountdown() {
+            // Set target date to December 31, 2024 23:59:59
+            const targetDate = new Date(2024, 11, 31, 23, 59, 59).getTime(); // Month is 0-based, so 11 = December
+            const now = new Date().getTime();
+            const timeLeft = targetDate - now;
+
+            // Time constants
+            const second = 1000;
+            const minute = second * 60;
+            const hour = minute * 60;
+            const day = hour * 24;
+
+            // Calculate all values
+            const days = Math.floor(timeLeft / day);
+            const hours = Math.floor((timeLeft % day) / hour);
+            const minutes = Math.floor((timeLeft % hour) / minute);
+            const seconds = Math.floor((timeLeft % minute) / second);
+
+            // Update display
+            if (timeLeft < 0) {
+                // If we've passed the target date
+                document.getElementById('days').innerText = '00';
+                document.getElementById('hours').innerText = '00';
+                document.getElementById('minutes').innerText = '00';
+                document.getElementById('seconds').innerText = '00';
+                document.getElementById('title').innerText = 'Happy New Year 2025! 🎉';
+            } else {
+                // Show countdown
+                document.getElementById('days').innerText = String(days).padStart(2, '0');
+                document.getElementById('hours').innerText = String(hours).padStart(2, '0');
+                document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
+            }
+        }
+
+        // Initial call and set interval
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+
+        // Optional: Clear interval when countdown is finished
+        const targetDate = new Date(2024, 11, 31, 23, 59, 59).getTime();
+        const now = new Date().getTime();
+        if (now > targetDate) {
+            clearInterval(countdownInterval);
+        }
+
+        // Title Animation
+        gsap.from("#title", {
+            duration: 2,
+            y: -100,
+            opacity: 0,
+            ease: "bounce.out"
+        });
+
+        // Socket.IO connection
+        const socket = io(BACKEND_URL);
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('message received', (messageData) => {
+            createFloatingMessage(
+                messageData.name,
+                messageData.message,
+                new Date(messageData.timestamp).toLocaleString()
+            );
+            updateModalMessages();
+        });
+
+        // Modified Form Handling with Socket.IO
+        document.getElementById('greetingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const message = document.getElementById('message').value;
+            
+            // Emit message through socket
+            socket.emit('new message', { name, message });
+            
+            // Clear form
+            this.reset();
+        });
+
+        // Load messages when page loads
+        window.addEventListener('load', () => {
+            loadMessages();
+            updateModalMessages();
+        });
+
+        // Messages Modal Functionality
+        const searchInput = document.getElementById('search-messages');
+        const filterSelect = document.getElementById('message-filter');
+        const modalMessages = document.getElementById('modal-messages');
+
+        async function updateModalMessages() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/messages`);
+                let messages = await response.json();
+                
+                const searchTerm = searchInput.value.toLowerCase();
+                const filterValue = filterSelect.value;
+
+                // Filter messages
+                let filteredMessages = messages.filter(msg => 
+                    msg.name.toLowerCase().includes(searchTerm) || 
+                    msg.message.toLowerCase().includes(searchTerm)
+                );
+
+                // Apply sorting
+                if (filterValue === 'recent') {
+                    filteredMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                } else if (filterValue === 'oldest') {
+                    filteredMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                }
+
+                // Clear and update modal
+                modalMessages.innerHTML = '';
+                filteredMessages.forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'card bg-base-200 shadow-md';
+                    messageElement.innerHTML = `
+                        <div class="card-body p-4">
+                            <div class="flex justify-between items-start">
+                                <h3 class="card-title text-sm">
+                                    <i class="fas fa-user mr-2"></i>${msg.name}
+                                </h3>
+                                <span class="text-xs opacity-50">
+                                    ${new Date(msg.timestamp).toLocaleString()}
+                                </span>
+                            </div>
+                            <p class="text-sm mt-2">${msg.message}</p>
+                        </div>
+                    `;
+                    modalMessages.appendChild(messageElement);
+                });
+            } catch (error) {
+                console.error('Error updating modal messages:', error);
+            }
+        }
+
+        // Event listeners for search and filter
+        searchInput.addEventListener('input', updateModalMessages);
+        filterSelect.addEventListener('change', updateModalMessages);
+
+        // Update messages when modal opens
+        document.getElementById('messages-modal').addEventListener('show', updateModalMessages);
+    </script>
+</body>
+</html>
